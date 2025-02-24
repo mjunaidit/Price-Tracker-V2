@@ -14,13 +14,11 @@ def main():
     products = [
         {
             'url': os.getenv('PRODUCT_URL_1'),
-            'selector': '.tracker',
-            'name': 'Product 1'
+            'selector': '.tracker'
         },
         {
             'url': os.getenv('PRODUCT_URL_2'),
-            'selector': '.tracker',
-            'name': 'Product 2'
+            'selector': '.tracker'
         },
         # Add more products as needed
     ]
@@ -28,17 +26,15 @@ def main():
     # Check each product
     for product in products:
         if not product['url']:
-            print(f"Skipping {product['name']}: No URL provided")
+            print(f"Skipping URL: No URL provided")
             continue
             
-        print(f"\nChecking price for {product['name']}:")
-        print(f"URL: {product['url']}")
+        print(f"\nChecking price for URL: {product['url']}")
         
         monitor = PriceMonitor(
             url=product['url'],
             price_selector=product['selector'],
-            email_settings=email_settings,
-            product_name=product['name']  # New parameter
+            email_settings=email_settings
         )
         monitor.check_price_change()
 

@@ -10,10 +10,30 @@ class PriceMonitor:
         self.url = url
         self.price_selector = price_selector
         self.email_settings = email_settings
-        self.product_name = product_name or url
+        # Get the page title first, fall back to provided name or URL
+        self.product_name = self._get_page_title() or product_name or url
         # Create a safe filename from product name
         self.history_file = f"price_history_{self.product_name.lower().replace(' ', '_')}.json"
         self.price_history = self._load_price_history()
+    
+    def _get_page_title(self):
+        try:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+            response = requests.get(self.url, headers=headers)
+            soup = BeautifulSoup(response.text, 'html.parser')
+            title = soup.title.string if soup.title else None
+            # Clean up the title
+            if title:
+                title = title.strip().replace('\n', ' ').replace('\r', '')
+                # Optionally truncate if too long
+                if len(title) > 50:
+                    title = title[:47] + "..."
+            return title
+        except Exception as e:
+            print(f"Error fetching page title: {e}")
+            return None
     
     def _load_price_history(self):
         try:
