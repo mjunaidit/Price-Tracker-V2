@@ -15,19 +15,19 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        fetch-depth: 1  # Get the latest commit
+        fetch-depth: 0  # Get all history for all branches
     
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
     
-    - name: Download previous price history
-      uses: actions/download-artifact@v4
-      with:
-        name: price-history
-        path: .
-      continue-on-error: true  # Continue even if no previous artifacts exist
+    - name: Fetch price history from history branch
+      run: |
+        if git ls-remote --heads origin price-history; then
+          git fetch origin price-history
+          git checkout price-history -- price_history_*.json || true
+        fi
     
     - name: Install dependencies
       run: |
@@ -41,13 +41,26 @@ jobs:
         RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
         PRODUCT_URL_1: ${{ secrets.PRODUCT_URL_1 }}
         PRODUCT_URL_2: ${{ secrets.PRODUCT_URL_2 }}
-        # Add more product URLs as needed
       run: python monitor_example.py
     
     - name: Store price history
       if: success()
-      uses: actions/upload-artifact@v4
-      with:
-        name: price-history
-        path: price_history_*.json
-        retention-days: 90  # Keep history for 90 days 
+      run: |
+        # Configure git
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        
+        # Create and switch to price-history branch
+        if git ls-remote --heads origin price-history; then
+          git fetch origin price-history
+          git checkout price-history
+        else
+          git checkout --orphan price-history
+          git rm -rf .
+        fi
+        
+        # Copy JSON files and commit
+        git checkout main -- price_history_*.json || true
+        git add price_history_*.json
+        git commit -m "Update price history [skip ci]" || echo "No changes to commit"
+        git push origin price-history 
