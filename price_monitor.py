@@ -6,15 +6,18 @@ from datetime import datetime
 import os
 
 class PriceMonitor:
-    def __init__(self, url, price_selector, email_settings=None):
+    def __init__(self, url, price_selector, email_settings=None, product_name=None):
         self.url = url
         self.price_selector = price_selector
-        self.price_history = self._load_price_history()
         self.email_settings = email_settings
+        self.product_name = product_name or url
+        # Create a safe filename from product name
+        self.history_file = f"price_history_{self.product_name.lower().replace(' ', '_')}.json"
+        self.price_history = self._load_price_history()
     
     def _load_price_history(self):
         try:
-            with open('price_history.json', 'r') as f:
+            with open(self.history_file, 'r') as f:
                 content = f.read().strip()
                 if not content:
                     return {}
@@ -22,15 +25,15 @@ class PriceMonitor:
         except FileNotFoundError:
             return {}
         except Exception as e:
-            print(f"Error loading price history: {e}")
+            print(f"Error loading price history for {self.product_name}: {e}")
             return {}
     
     def _save_price_history(self):
         try:
-            with open('price_history.json', 'w') as f:
+            with open(self.history_file, 'w') as f:
                 json.dump(self.price_history, f, indent=2)
         except Exception as e:
-            print(f"Error saving price history: {e}")
+            print(f"Error saving price history for {self.product_name}: {e}")
     
     def get_current_price(self):
         try:
@@ -79,14 +82,14 @@ class PriceMonitor:
         message = MIMEMultipart()
         message["From"] = sender_email
         message["To"] = receiver_email
-        message["Subject"] = f"Price Change Alert: {old_price} -> {new_price}"
+        message["Subject"] = f"Price Change Alert for {self.product_name}: {old_price} -> {new_price}"
 
         body = f"""
-        Price has changed for {self.url}
+        Price has changed for {self.product_name}
+        URL: {self.url}
         
         New price: {new_price}
         Old price: {old_price}
-        
         
         Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
         """

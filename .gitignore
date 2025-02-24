@@ -1,2 +1,6 @@
-# Ignore price history file locally
-price_history.json
+# Ignore all JSON files
+*.json
+
+# Optionally, don't ignore specific JSON files if needed
+!package.json
+!manifest.json

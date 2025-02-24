@@ -3,21 +3,44 @@ from price_monitor import PriceMonitor
 import time
 
 def main():
-    # Get settings from environment variables
-    url = os.getenv('PRODUCT_URL')
-    price_selector = ".tracker"
-    
+    # Get email settings that will be shared across all monitors
     email_settings = {
         'sender_email': os.getenv('SENDER_EMAIL'),
         'sender_password': os.getenv('SENDER_PASSWORD'),
         'receiver_email': os.getenv('RECEIVER_EMAIL')
     }
     
-    monitor = PriceMonitor(url, price_selector, email_settings)
+    # Define multiple URLs and their selectors
+    products = [
+        {
+            'url': os.getenv('PRODUCT_URL_1'),
+            'selector': '.tracker',
+            'name': 'Product 1'
+        },
+        {
+            'url': os.getenv('PRODUCT_URL_2'),
+            'selector': '.tracker',
+            'name': 'Product 2'
+        },
+        # Add more products as needed
+    ]
     
-    # For GitHub Actions, we'll just do one check instead of running continuously
-    print(f"Checking price for {url}...")
-    monitor.check_price_change()
+    # Check each product
+    for product in products:
+        if not product['url']:
+            print(f"Skipping {product['name']}: No URL provided")
+            continue
+            
+        print(f"\nChecking price for {product['name']}:")
+        print(f"URL: {product['url']}")
+        
+        monitor = PriceMonitor(
+            url=product['url'],
+            price_selector=product['selector'],
+            email_settings=email_settings,
+            product_name=product['name']  # New parameter
+        )
+        monitor.check_price_change()
 
 if __name__ == "__main__":
     main() 

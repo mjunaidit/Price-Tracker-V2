@@ -32,7 +32,9 @@ jobs:
         SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
         SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
         RECEIVER_EMAIL: ${{ secrets.RECEIVER_EMAIL }}
-        PRODUCT_URL: ${{ secrets.PRODUCT_URL }}
+        PRODUCT_URL_1: ${{ secrets.PRODUCT_URL_1 }}
+        PRODUCT_URL_2: ${{ secrets.PRODUCT_URL_2 }}
+        # Add more product URLs as needed
       run: python monitor_example.py
     
     - name: Commit price history
@@ -40,6 +42,6 @@ jobs:
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add -f price_history.json  # Force add the file even if it's in .gitignore
+        git add -f price_history_*.json  # Force add all price history files
         git commit -m "Update price history [skip ci]" || echo "No changes to commit"
         git push 
