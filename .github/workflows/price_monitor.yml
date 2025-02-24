@@ -29,6 +29,7 @@ jobs:
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         
         echo "Current directory contents before:"
+        pwd
         ls -la
         
         # Try to get existing history files
@@ -36,7 +37,10 @@ jobs:
           echo "Price history branch exists, fetching files..."
           git fetch origin price-history
           git checkout origin/price-history -- price_history_*.json || true
+          echo "Checking for history files after fetch:"
           ls -la price_history_*.json || true
+          echo "File contents if they exist:"
+          cat price_history_*.json || true
         else
           echo "Creating new price-history branch..."
           git checkout --orphan price-history
@@ -45,11 +49,6 @@ jobs:
           git push origin price-history
           git checkout main
         fi
-        
-        echo "Current directory contents after:"
-        ls -la
-        echo "Looking for price history files:"
-        find . -name "price_history_*.json"
     
     - name: Install dependencies
       run: |

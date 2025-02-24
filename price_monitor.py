@@ -41,6 +41,12 @@ class PriceMonitor:
     
     def _load_price_history(self):
         print(f"\nAttempting to load price history from: {self.history_file}")
+        print("Current working directory:", os.getcwd())
+        print("Files in current directory:")
+        for f in os.listdir('.'):
+            if f.startswith('price_history_'):
+                print(f"Found history file: {f}")
+        
         try:
             with open(self.history_file, 'r') as f:
                 print(f"Successfully opened {self.history_file}")
@@ -53,6 +59,7 @@ class PriceMonitor:
                 return data
         except FileNotFoundError:
             print(f"File not found: {self.history_file}")
+            print("Full path attempted:", os.path.abspath(self.history_file))
             return {}
         except Exception as e:
             print(f"Error loading price history for {self.product_name}: {e}")
