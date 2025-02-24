@@ -36,24 +36,35 @@ class PriceMonitor:
             return None
     
     def _load_price_history(self):
+        print(f"\nAttempting to load price history from: {self.history_file}")
         try:
             with open(self.history_file, 'r') as f:
+                print(f"Successfully opened {self.history_file}")
                 content = f.read().strip()
                 if not content:
+                    print("File is empty")
                     return {}
-                return json.loads(content)
+                data = json.loads(content)
+                print(f"Loaded data: {json.dumps(data, indent=2)}")
+                return data
         except FileNotFoundError:
+            print(f"File not found: {self.history_file}")
             return {}
         except Exception as e:
             print(f"Error loading price history for {self.product_name}: {e}")
+            print(f"Error type: {type(e)}")
             return {}
     
     def _save_price_history(self):
+        print(f"\nAttempting to save price history to: {self.history_file}")
         try:
             with open(self.history_file, 'w') as f:
+                print(f"Writing data: {json.dumps(self.price_history, indent=2)}")
                 json.dump(self.price_history, f, indent=2)
+                print("Successfully saved price history")
         except Exception as e:
             print(f"Error saving price history for {self.product_name}: {e}")
+            print(f"Error type: {type(e)}")
     
     def get_current_price(self):
         try:

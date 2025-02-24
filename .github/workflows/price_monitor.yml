@@ -28,6 +28,9 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         
+        echo "Current directory contents before:"
+        ls -la
+        
         # Create and switch to a new price-history branch
         git checkout --orphan price-history || true
         git rm -rf . || true
@@ -36,6 +39,11 @@ jobs:
         
         # Return to main branch
         git checkout main
+        
+        echo "Current directory contents after:"
+        ls -la
+        echo "Looking for price history files:"
+        find . -name "price_history_*.json"
     
     - name: Install dependencies
       run: |
@@ -54,13 +62,23 @@ jobs:
     - name: Store price history
       if: success()
       run: |
+        echo "Files before switching branch:"
+        ls -la
+        
         # Switch to price-history branch
         git checkout price-history
+        
+        echo "Files after switching branch:"
+        ls -la
         
         # Copy JSON files from working directory
         cp -f price_history_*.json . || true
         
+        echo "Files after copying:"
+        ls -la
+        
         # Commit and push changes
         git add price_history_*.json || true
+        git status
         git commit -m "Update price history [skip ci]" || echo "No changes to commit"
         git push origin price-history || true 
