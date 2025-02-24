@@ -13,7 +13,11 @@ class PriceMonitor:
         # Get the page title first, fall back to provided name or URL
         self.product_name = self._get_page_title() or product_name or url
         # Create a safe filename from product name
-        self.history_file = f"price_history_{self.product_name.lower().replace(' ', '_')}.json"
+        safe_name = self.product_name.lower()
+        safe_name = ''.join(c if c.isalnum() else '_' for c in safe_name)  # Replace special chars with _
+        safe_name = '_'.join(filter(None, safe_name.split('_')))  # Remove duplicate underscores
+        self.history_file = f"price_history_{safe_name}.json"
+        print(f"Generated filename: {self.history_file}")  # Debug print
         self.price_history = self._load_price_history()
     
     def _get_page_title(self):
