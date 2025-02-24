@@ -22,11 +22,23 @@ jobs:
       with:
         python-version: '3.x'
     
-    - name: Fetch price history from history branch
+    - name: Initialize or fetch price history
       run: |
-        if git ls-remote --heads origin price-history; then
+        # Configure git
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        
+        # Try to create price-history branch if it doesn't exist
+        if ! git ls-remote --heads origin price-history; then
+          git checkout --orphan price-history
+          git rm -rf .
+          git commit --allow-empty -m "Initialize price-history branch"
+          git push origin price-history
+          git checkout main
+        else
           git fetch origin price-history
           git checkout price-history -- price_history_*.json || true
+          git checkout main
         fi
     
     - name: Install dependencies
@@ -46,21 +58,14 @@ jobs:
     - name: Store price history
       if: success()
       run: |
-        # Configure git
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        # Switch to price-history branch
+        git fetch origin price-history
+        git checkout price-history
         
-        # Create and switch to price-history branch
-        if git ls-remote --heads origin price-history; then
-          git fetch origin price-history
-          git checkout price-history
-        else
-          git checkout --orphan price-history
-          git rm -rf .
-        fi
+        # Copy JSON files from working directory
+        cp -f ../price_history_*.json . || true
         
-        # Copy JSON files and commit
-        git checkout main -- price_history_*.json || true
+        # Commit and push changes
         git add price_history_*.json
         git commit -m "Update price history [skip ci]" || echo "No changes to commit"
         git push origin price-history 
