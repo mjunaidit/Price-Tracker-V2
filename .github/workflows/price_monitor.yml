@@ -37,11 +37,10 @@ jobs:
         # Add more product URLs as needed
       run: python monitor_example.py
     
-    - name: Commit price history
+    - name: Store price history
       if: success()
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add -f price_history_*.json  # Force add all price history files
-        git commit -m "Update price history [skip ci]" || echo "No changes to commit"
-        git push 
+      uses: actions/upload-artifact@v2
+      with:
+        name: price-history
+        path: price_history_*.json
+        retention-days: 90  # Keep history for 90 days 
