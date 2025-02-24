@@ -28,18 +28,14 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         
-        # Try to create price-history branch if it doesn't exist
-        if ! git ls-remote --heads origin price-history; then
-          git checkout --orphan price-history
-          git rm -rf .
-          git commit --allow-empty -m "Initialize price-history branch"
-          git push origin price-history
-          git checkout main
-        else
-          git fetch origin price-history
-          git checkout price-history -- price_history_*.json || true
-          git checkout main
-        fi
+        # Create and switch to a new price-history branch
+        git checkout --orphan price-history || true
+        git rm -rf . || true
+        git commit --allow-empty -m "Initialize price-history branch" || true
+        git push origin price-history || true
+        
+        # Return to main branch
+        git checkout main
     
     - name: Install dependencies
       run: |
@@ -59,13 +55,12 @@ jobs:
       if: success()
       run: |
         # Switch to price-history branch
-        git fetch origin price-history
         git checkout price-history
         
         # Copy JSON files from working directory
-        cp -f ../price_history_*.json . || true
+        cp -f price_history_*.json . || true
         
         # Commit and push changes
-        git add price_history_*.json
+        git add price_history_*.json || true
         git commit -m "Update price history [skip ci]" || echo "No changes to commit"
-        git push origin price-history 
+        git push origin price-history || true 
