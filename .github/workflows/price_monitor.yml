@@ -22,6 +22,13 @@ jobs:
       with:
         python-version: '3.x'
     
+    - name: Download previous price history
+      uses: actions/download-artifact@v4
+      with:
+        name: price-history
+        path: .
+      continue-on-error: true  # Continue even if no previous artifacts exist
+    
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
