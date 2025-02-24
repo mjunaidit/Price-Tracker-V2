@@ -31,14 +31,20 @@ jobs:
         echo "Current directory contents before:"
         ls -la
         
-        # Create and switch to a new price-history branch
-        git checkout --orphan price-history || true
-        git rm -rf . || true
-        git commit --allow-empty -m "Initialize price-history branch" || true
-        git push origin price-history || true
-        
-        # Return to main branch
-        git checkout main
+        # Try to get existing history files
+        if git ls-remote --heads origin price-history; then
+          echo "Price history branch exists, fetching files..."
+          git fetch origin price-history
+          git checkout origin/price-history -- price_history_*.json || true
+          ls -la price_history_*.json || true
+        else
+          echo "Creating new price-history branch..."
+          git checkout --orphan price-history
+          git rm -rf .
+          git commit --allow-empty -m "Initialize price-history branch"
+          git push origin price-history
+          git checkout main
+        fi
         
         echo "Current directory contents after:"
         ls -la
@@ -62,19 +68,17 @@ jobs:
     - name: Store price history
       if: success()
       run: |
-        echo "Files before switching branch:"
-        ls -la
+        echo "Files before storing:"
+        ls -la price_history_*.json || true
         
-        # Switch to price-history branch
+        # Create or update price-history branch
+        git fetch origin price-history || git checkout --orphan price-history
         git checkout price-history
         
-        echo "Files after switching branch:"
-        ls -la
-        
-        # Copy JSON files from working directory
+        # Make sure we have the files
         cp -f price_history_*.json . || true
         
-        echo "Files after copying:"
+        echo "Files ready to commit:"
         ls -la
         
         # Commit and push changes
